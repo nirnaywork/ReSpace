@@ -63,11 +63,8 @@ app.use('*', (req, res) => {
 // Global error handler
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`✅ ReSpace server running on port ${PORT}`);
-  console.log(`🌐 Client URL: ${process.env.CLIENT_URL}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+server.listen(10000, () => {
+  console.log("Server running on port 10000");
 });
 
 module.exports = { app, server };

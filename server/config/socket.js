@@ -5,7 +5,7 @@ let io;
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      origin: 'https://re-space.vercel.app',
       methods: ['GET', 'POST'],
       credentials: true,
     },

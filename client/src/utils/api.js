@@ -8,7 +8,7 @@ import { auth } from './firebase';
  * In Local Dev: Uses '' (empty) so Vite proxy forwards it to http://localhost:5000.
  */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '',
+  baseURL: import.meta.env.VITE_API_URL,
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });

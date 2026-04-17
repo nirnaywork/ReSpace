@@ -12,11 +12,8 @@ export const useSocket = (onNotification) => {
   const connect = useCallback(() => {
     if (!user || socket?.connected) return;
 
-    socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
+    socket = io(import.meta.env.VITE_API_URL, {
+      transports: ['websocket']
     });
 
     socket.on('connect', () => {

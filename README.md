@@ -1,116 +1,105 @@
-# ReSpace 🏢
+# ReSpace 🏢: Unlock Your Space
 
-ReSpace is India's premier commercial infrastructure rental SaaS platform. It solves the problem of idle commercial infrastructure by connecting property owners with renters who need temporary spaces like warehouses, commercial kitchens, event halls, office spaces, and parking spots.
+ReSpace is India's premier commercial infrastructure rental platform. It bridges the gap between idle commercial assets and businesses needing flexible, specialized spaces.
 
-Users can seamlessly switch between **Owner** (listing & managing spaces) and **Renter** (discovering & booking spaces) roles under a single account.
+---
+
+## 🛑 The Problem: Underutilized Commercial Assets
+Commercial real estate is plagued by inefficiency:
+- **Rigid Long-Term Leases**: Small businesses and cloud kitchens are often forced into 1-3 year commitments, which is a death sentence for agility.
+- **Wasted Infrastructure**: Millions of square feet of specialized space (warehouses, event halls, parking) sit idle during off-peak hours.
+- **Discovery Gap**: Finding a specialized space (like a food-grade kitchen) for just a few days is nearly impossible through traditional brokers.
+
+## ✅ The Solution: ReSpace
+ReSpace provides a **"Posh" Marketplace** for flexible, short-term specialized spaces:
+- **On-Demand Flexibility**: Rent by the hour, day, or week.
+- **Niche Specialization**: Optimized for Warehouses, Kitchens, Event Halls, Offices, and Parking.
+- **Trust-First Ecosystem**: Automated verification, real-time availability, and secure payments.
+- **AI-Powered Matching**: Instantly discover the perfect space based on specific business needs.
+
+---
+
+## 🔄 Website Flow
+
+### 👤 For Renters (Discovery to Booking)
+1. **Search & Filter**: Browse cinematic listings with filters for property type, price, and amenities.
+2. **AI Smart Match**: Describe your business goal to our AI Chatbot (e.g., "I need a kitchen for a 3-day catering event in Mumbai") to get instant recommendations.
+3. **Availability Check**: Use the interactive calendar to find open slots in real-time.
+4. **Secure Checkout**: Pay via Razorpay with automated platform fee calculation and instant booking confirmation.
+5. **Dashboard Management**: Track all current and past bookings in a centralized renter dashboard.
+
+### 💼 For Owners (Listing to Management)
+1. **List Your Space**: A structured, multi-step onboarding process to capture all property details and images.
+2. **Owner Dashboard**: Manage listings, track booking requests, and respond to renter queries.
+3. **Analytics**: Monitor earnings and space utilization metrics at a glance.
+4. **Verified Status**: Gain trust with the "Verified Space" badge upon site audit.
 
 ---
 
 ## ✨ Key Features
-
-- **Dual-Role Architecture**: Single sign-on allows users to seamlessly switch between Renter and Owner modes.
-- **AI Smart Search**: Powered by Groq (Llama 3), users can describe their business needs (e.g., "I want to start a cloud kitchen in Mumbai") and the AI will recommend the exact types of properties and features they need.
-- **Dynamic Filtering & Browsing**: Highly responsive grid with client-side & server-side filtering for location, type, price, and amenities.
-- **Real-Time Booking & Availability**: Includes an automated calendar to check slot availability and book spaces by the hour or day.
-- **Interactive Maps**: Embedded Google Maps API to visually confirm property locations.
-- **Offline / Fallback Mode**: The platform gracefully degrades to use beautifully generated cached data if the backend API goes offline, ensuring the site always looks populated.
-- **Beautiful UI/UX**: Built with Tailwind CSS and Lucide React icons, featuring smooth animations, glassmorphism, and a modern, premium aesthetic.
+- **Dual-Role Architecture**: Seamlessly switch between Owner and Renter modes under a single account.
+- **Posh UI/UX**: Cinematic, dark-themed design system with smooth animations and responsive layouts.
+- **AI Intelligent Search**: Powered by **Groq (Llama 3)** for natural language space discovery.
+- **Real-Time Booking**: Interactive Availability Calendar and Time Slot Picker.
+- **Integrated Payments**: Secure, localized payment processing via **Razorpay**.
+- **Real-Time Notifications**: Instant updates on booking status via **Socket.io**.
+- **Verified Listings**: Quality assurance through a robust verification badge system.
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend (Client)
-- **Framework**: React 19 + Vite
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **Forms & Validation**: React Hook Form + Zod
-- **Routing**: React Router DOM
-- **Maps**: Google Maps Embed API
+- **React 19 + Vite**: High-performance, snappy single-page application.
+- **Tailwind CSS**: Custom "Posh" design system with deep-dark and warm-crimson colors.
+- **Lucide React**: Modern, scalable icon set.
+- **React Router DOM**: Client-side navigation.
+- **Framer Motion**: Smooth micro-animations.
 
 ### Backend (Server)
-- **Framework**: Node.js + Express
-- **Database**: MongoDB (Mongoose)
-- **Authentication**: Firebase Admin SDK 
-- **AI Integration**: Groq SDK (Llama 3.3 70b)
-- **File Uploads**: Multer
-- **Architecture**: RESTful API design
+- **Node.js + Express**: Scalable API architecture.
+- **Prisma + Supabase (PostgreSQL)**: Modern ORM for precise data modeling and secure cloud storage.
+- **Firebase Auth**: Enterprise-grade user authentication and profile management.
+- **Groq AI (Llama 3.3)**: High-speed LLM integration for smart matching.
+- **Socket.io**: Bi-directional communication for real-time notifications.
+- **Multer**: Multi-file image uploading.
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- Node.js (v18 or higher)
-- MongoDB (Running locally or MongoDB Atlas URI)
-- Firebase Project (for Authentication)
-- Groq API Key (for AI Smart Match)
-
-### 1. Clone the repository
+### 1. Clone & Install
 ```bash
 git clone https://github.com/nirnaywork/ReSpace.git
 cd ReSpace
+
+# Install Server Dependencies
+cd server && npm install
+
+# Install Client Dependencies
+cd ../client && npm install
 ```
 
 ### 2. Environment Setup
+Configure the following `.env` files based on the `.env.example` templates in each folder:
+- **Server**: Setup `DATABASE_URL` (Supabase), `GROQ_API_KEY`, `JWT_SECRET`, and `CLIENT_URL`.
+- **Client**: Setup Firebase config and Google Maps API key.
 
-**Backend (`server/.env`)**
-Create a `.env` file in the `/server` folder with the following variables:
-```env
-PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/respace
-JWT_SECRET=your_jwt_secret_key
-GROQ_API_KEY=your_groq_api_key
-CLIENT_URL=http://localhost:5173
-```
-*(Note: For Firebase Auth verification, you also need to place your Firebase Admin `serviceAccountKey.json` inside the `server/config/` directory.)*
-
-**Frontend (`client/.env`)**
-Create a `.env` file in the `/client` folder with the following variables:
-```env
-VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
-VITE_FIREBASE_APP_ID=your_firebase_app_id
-VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-```
-
-### 3. Install Dependencies & Run
-
-You need two terminals running simultaneously.
-
-**Terminal 1 (Backend)**
+### 3. Run Locally
+**Backend**
 ```bash
 cd server
-npm install
 npm run dev
 ```
-
-**Terminal 2 (Frontend)**
+**Frontend**
 ```bash
 cd client
-npm install
 npm run dev
 ```
 
-Visit `http://localhost:5173` in your browser.
+Visit `http://localhost:5173` to explore ReSpace.
 
 ---
 
-## 🌱 Database Seeding
-
-To immediately populate your local MongoDB with realistic, AI-generated commercial listings across India, run the built-in seed script:
-
-```bash
-cd server
-node scripts/seed.js
-```
-This script will auto-generate 24 highly-detailed spaces (Warehouses, Kitchens, Event Halls, Offices) in cities like Mumbai, Delhi, and Bangalore, complete with real Unsplash images and verified owner profiles.
-
----
-
-## 🛡️ License & Deployment
-
-This project is ready for deployment on platforms like Vercel (Frontend) and Render/Heroku (Backend). Ensure environment variables are properly configured in your hosting provider's dashboard. 
+## ⚖️ License
+Licensed under the [MIT License](LICENSE).

@@ -75,7 +75,7 @@ const BookingModal = ({ isOpen, onClose, listing }) => {
             }
           },
           prefill: { name: '', email: '', contact: '' },
-          theme: { color: '#731919' },
+          theme: { color: '#F0D8A1' },
           modal: {
             ondismiss: () => {
               toast.warning('Payment cancelled. Your slot has not been reserved.');

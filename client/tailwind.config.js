@@ -8,7 +8,7 @@ export default {
     extend: {
       colors: {
         'brand-red':     '#C8622A', /* Warm Cognac Accent */
-        'brand-dark':    '#731919', /* Deep Crimson — Accents */
+        'brand-dark':    '#F0D8A1', /* Light Gold — Accents */
         'brand-cream':   '#0E0C0A', /* Deep Espresso Background */
         'brand-card':    '#1A1612', /* Rich Dark Walnut Card */
         'brand-muted':   '#8C7D6E', /* Warm Taupe — Readable Text */

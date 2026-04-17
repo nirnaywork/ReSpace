@@ -111,7 +111,7 @@
 @layer utilities {
   /* Dot grid pattern for hero */
   .dot-pattern {
-    background-image: radial-gradient(circle, rgba(115, 25, 25, 0.15) 1px, transparent 1px);
+    background-image: radial-gradient(circle, rgba(240, 216, 161, 0.15) 1px, transparent 1px);
     background-size: 24px 24px;
   }
 

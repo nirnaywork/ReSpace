@@ -3,7 +3,7 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
-const connectDB = require('./config/db');
+// No MongoDB connection required as Prisma handles postgres connection pools transparently
 const { initSocket } = require('./config/socket');
 const { generalRateLimiter, aiRateLimiter, uploadRateLimiter } = require('./middleware/rateLimiter');
 const errorHandler = require('./middleware/errorHandler');
@@ -23,8 +23,7 @@ const server = http.createServer(app);
 // Init Socket.io
 initSocket(server);
 
-// Connect to MongoDB
-connectDB();
+ // Removed connectDB()
 
 // Security Middleware
 app.use(helmet());

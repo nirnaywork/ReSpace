@@ -7,24 +7,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-red': '#731919',
-        'brand-dark': '#303234',
-        'brand-cream': '#F9F6F0',
-        'brand-card': '#FFFFFF',
-        'brand-muted': '#6B7280',
-        'brand-border': '#E5E7EB',
-        'brand-success': '#16A34A',
-        'brand-warn': '#D97706',
-        'brand-error': '#DC2626',
+        'brand-red':     '#C8622A', /* Warm Cognac Accent */
+        'brand-dark':    '#731919', /* Deep Crimson — Accents */
+        'brand-cream':   '#0E0C0A', /* Deep Espresso Background */
+        'brand-card':    '#1A1612', /* Rich Dark Walnut Card */
+        'brand-muted':   '#8C7D6E', /* Warm Taupe — Readable Text */
+        'brand-surface': '#141210', /* Near-Black Surface */
+        'brand-success': '#86A673', /* Sage/Olive Green — Posh Success */
+        'brand-warn':    '#C4924E',
+        'brand-error':   '#A84848',
+        'brand-border':  '#2E2520', /* Dark Mocha Border */
+        'brand-text-light': '#EDE8DF', /* Light Ivory for dark backgrounds */
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
+        heading: ['Syne', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       boxShadow: {
-        'card': '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06)',
-        'card-hover': '0 4px 12px rgba(0,0,0,0.15)',
-        'modal': '0 20px 60px rgba(0,0,0,0.3)',
+        'card': 'none',
+        'card-hover': 'none',
+        'modal': '0 24px 64px rgba(0,0,0,0.8)',
       },
     },
   },

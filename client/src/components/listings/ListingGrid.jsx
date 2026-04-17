@@ -1,19 +1,17 @@
 import React from 'react';
 import ListingCard from './ListingCard';
 import { ListingCardSkeleton } from '../ui/Skeleton';
-import { Search, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 const ListingGrid = ({
   listings = [],
   loading = false,
-  aiMatchedIds = [],
-  aiReasoning = '',
   emptyMessage = "No spaces found.",
   emptyAction,
 }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <ListingCardSkeleton key={i} />
         ))}
@@ -37,13 +35,11 @@ const ListingGrid = ({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="flex flex-col gap-4">
       {listings.map((listing) => (
         <ListingCard
           key={listing._id}
           listing={listing}
-          aiMatch={aiMatchedIds.includes(listing._id)}
-          aiReasoning={aiMatchedIds.includes(listing._id) ? aiReasoning : ''}
         />
       ))}
     </div>

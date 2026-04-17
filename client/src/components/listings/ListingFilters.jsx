@@ -49,7 +49,7 @@ const ListingFilters = ({ filters, onChange, onClear }) => {
               className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
                 (type === 'All' && !filters.type) || filters.type === type
                   ? 'bg-brand-red text-white border-brand-red'
-                  : 'border-brand-border text-brand-muted hover:border-brand-red hover:text-brand-red bg-white'
+                  : 'border-brand-border text-brand-muted hover:border-brand-red hover:text-brand-red bg-brand-card'
               }`}
               aria-pressed={(type === 'All' && !filters.type) || filters.type === type}
             >
@@ -103,7 +103,7 @@ const ListingFilters = ({ filters, onChange, onClear }) => {
                 className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
                   isActive
                     ? 'bg-brand-red text-white border-brand-red'
-                    : 'border-brand-border text-brand-muted hover:border-brand-red hover:text-brand-red bg-white'
+                    : 'border-brand-border text-brand-muted hover:border-brand-red hover:text-brand-red bg-brand-card'
                 }`}
                 aria-pressed={isActive}
               >

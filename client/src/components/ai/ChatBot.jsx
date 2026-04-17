@@ -91,7 +91,7 @@ const ChatBot = () => {
     <>
       {/* Chat Widget */}
       {isOpen && (
-        <div className={`fixed bottom-20 right-4 w-96 bg-white rounded-2xl shadow-modal border border-brand-border z-50 flex flex-col animate-slide-up overflow-hidden ${isMinimized ? 'h-14' : 'h-[520px]'}`}
+        <div className={`fixed bottom-20 right-4 w-96 bg-brand-card rounded-2xl shadow-modal border border-brand-border z-50 flex flex-col animate-slide-up overflow-hidden ${isMinimized ? 'h-14' : 'h-[520px]'}`}
           role="dialog" aria-label="ReSpace AI Chat">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 bg-brand-red text-white flex-shrink-0">
@@ -144,7 +144,7 @@ const ChatBot = () => {
                             <Link
                               key={listing._id}
                               to={`/listings/${listing._id}`}
-                              className="flex items-center gap-3 p-2.5 bg-white border border-brand-border rounded-xl hover:shadow-sm hover:border-brand-red transition-all"
+                              className="flex items-center gap-3 p-2.5 bg-brand-card border border-brand-border rounded-xl hover:shadow-sm hover:border-brand-red transition-all"
                             >
                               {listing.images?.[0] ? (
                                 <img

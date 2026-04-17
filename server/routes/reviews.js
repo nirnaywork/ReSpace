@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middleware/verifyToken');
-const Review = require('../models/Review');
-const Listing = require('../models/Listing');
-const User = require('../models/User');
+const prisma = require('../config/prisma');
 
 // GET /api/reviews/listing/:id
 router.get('/listing/:id', async (req, res, next) => {
@@ -13,18 +11,21 @@ router.get('/listing/:id', async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const [reviews, total] = await Promise.all([
-      Review.find({ listingId: req.params.id })
-        .populate('renterId', 'name photoURL')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Review.countDocuments({ listingId: req.params.id }),
+      prisma.review.findMany({
+        where: { listingId: req.params.id },
+        include: { renter: { select: { name: true, photoURL: true } } },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.review.count({ where: { listingId: req.params.id } }),
     ]);
+
+    const formattedReviews = reviews.map(r => ({ ...r, _id: r.id, renterId: r.renter }));
 
     res.json({
       success: true,
-      data: { reviews, total, page, totalPages: Math.ceil(total / limit) },
+      data: { reviews: formattedReviews, total, page, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
     next(error);
@@ -39,18 +40,23 @@ router.put('/:id/reply', verifyToken, async (req, res, next) => {
       return res.status(400).json({ success: false, error: { code: 'INVALID_INPUT', message: 'Reply cannot be empty' } });
     }
 
-    const review = await Review.findById(req.params.id).populate('listingId');
+    const review = await prisma.review.findUnique({
+      where: { id: req.params.id },
+      include: { listing: true }
+    });
     if (!review) return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Review not found' } });
 
-    const user = await User.findOne({ uid: req.user.uid });
-    if (!review.listingId.ownerId.toString() === user._id.toString()) {
+    const user = await prisma.user.findUnique({ where: { firebaseUid: req.user.uid } });
+    if (review.listing.ownerId !== user.id) {
       return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Access denied' } });
     }
 
-    review.ownerReply = reply.trim();
-    await review.save();
+    const updatedReview = await prisma.review.update({
+      where: { id: req.params.id },
+      data: { ownerReply: reply.trim() }
+    });
 
-    res.json({ success: true, data: { review } });
+    res.json({ success: true, data: { review: { ...updatedReview, _id: updatedReview.id } } });
   } catch (error) {
     next(error);
   }

@@ -1,9 +1,9 @@
-const Listing = require('../models/Listing');
+const prisma = require('../config/prisma');
 
 const isOwner = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const listing = await Listing.findById(id);
+    const listing = await prisma.listing.findUnique({ where: { id } });
 
     if (!listing) {
       return res.status(404).json({
@@ -12,9 +12,9 @@ const isOwner = async (req, res, next) => {
       });
     }
 
-    const user = await require('../models/User').findOne({ uid: req.user.uid });
+    const user = await prisma.user.findUnique({ where: { firebaseUid: req.user.uid } });
     
-    if (!user || listing.ownerId.toString() !== user._id.toString()) {
+    if (!user || listing.ownerId !== user.id) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You do not have permission to modify this listing' },

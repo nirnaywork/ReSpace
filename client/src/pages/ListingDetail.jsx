@@ -48,7 +48,6 @@ const ListingDetail = () => {
   const { fetchListing, loading } = useListings();
 
   const [data, setData] = useState(null);
-  const [activeImage, setActiveImage] = useState(0);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [reviewPage, setReviewPage] = useState(1);
@@ -130,7 +129,6 @@ const ListingDetail = () => {
   }
 
   const { listing, starBreakdown = {}, similar = [] } = data;
-  const images = listing.images?.length ? listing.images : [];
   const owner = listing.ownerId;
 
   const initials = (name) => name ? name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase() : '?';
@@ -152,59 +150,7 @@ const ListingDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             {/* LEFT: Main Content */}
             <div className="lg:col-span-3 space-y-6">
-              {/* Image Gallery */}
-              <div className="space-y-2">
-                <div className="relative rounded-xl overflow-hidden bg-gray-100" style={{ paddingBottom: '60%' }}>
-                  {images[activeImage] ? (
-                    <img
-                      src={images[activeImage]}
-                      alt={`${listing.propertyName} image ${activeImage + 1}`}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      loading="eager"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-                      <p className="text-brand-muted">No image available</p>
-                    </div>
-                  )}
 
-                  {images.length > 1 && (
-                    <>
-                      <button onClick={() => setActiveImage((i) => (i - 1 + images.length) % images.length)}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center"
-                        aria-label="Previous image">
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => setActiveImage((i) => (i + 1) % images.length)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center"
-                        aria-label="Next image">
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-
-                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                        {images.map((_, i) => (
-                          <button key={i} onClick={() => setActiveImage(i)}
-                            className={`w-2 h-2 rounded-full transition-all ${i === activeImage ? 'bg-white' : 'bg-white/50'}`}
-                            aria-label={`Image ${i + 1}`} />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Thumbnail row */}
-                {images.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {images.slice(0, 6).map((img, i) => (
-                      <button key={i} onClick={() => setActiveImage(i)}
-                        className={`flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all ${i === activeImage ? 'border-brand-red' : 'border-transparent'}`}
-                        aria-label={`View image ${i + 1}`}>
-                        <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
 
               {/* Property Header */}
               <div className="card p-6 space-y-4">
@@ -358,7 +304,7 @@ const ListingDetail = () => {
                       View more →
                     </Link>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-4">
                     {similar.map((s) => <ListingCard key={s._id} listing={s} compact />)}
                   </div>
                 </div>
@@ -385,7 +331,7 @@ const ListingDetail = () => {
                   </div>
 
                   {listing.refundPolicy && (
-                    <p className="text-xs text-green-600 mb-4">
+                    <p className="text-xs text-brand-success mb-4 font-medium">
                       ✅ Free cancellation up to {listing.refundHours} hours before your booking starts
                     </p>
                   )}

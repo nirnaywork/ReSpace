@@ -5,7 +5,7 @@ import { SORT_OPTIONS } from '../../utils/constants';
 const SortDropdown = ({ value, onChange }) => {
   return (
     <div className="relative">
-      <div className="flex items-center gap-2 border border-brand-border rounded-lg bg-white px-3 h-11 focus-within:ring-2 focus-within:ring-brand-red/30 focus-within:border-brand-red transition-all">
+      <div className="flex items-center gap-2 border border-brand-border rounded-lg bg-brand-card px-3 h-11 focus-within:ring-2 focus-within:ring-brand-red/30 focus-within:border-brand-red transition-all">
         <ArrowUpDown className="w-4 h-4 text-brand-muted flex-shrink-0" />
         <select
           value={value || 'newest'}

@@ -46,11 +46,9 @@ const App = () => (
         <ToastProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Auth page — no layout */}
-              <Route path="/auth" element={<Auth />} />
-
-              {/* All other pages — with layout */}
+              {/* All pages — with layout */}
               <Route element={<AppLayout />}>
+                <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={<Home />} />
                 <Route path="/listings" element={<Listings />} />
                 <Route path="/listings/:id" element={<ListingDetail />} />

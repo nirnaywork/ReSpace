@@ -52,7 +52,7 @@ const Modal = ({
       aria-modal="true"
       aria-labelledby={title ? 'modal-title' : undefined}
     >
-      <div className={`bg-white rounded-xl shadow-modal w-full ${sizes[size]} animate-slide-up max-h-[90vh] flex flex-col ${className}`}>
+      <div className={`bg-brand-card rounded-xl shadow-modal w-full ${sizes[size]} animate-slide-up max-h-[90vh] flex flex-col ${className}`}>
         {(title || showClose) && (
           <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border flex-shrink-0">
             {title && (

@@ -73,13 +73,13 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-brand-dark text-white shadow-lg" role="navigation" aria-label="Main navigation">
+    <nav className="sticky top-0 z-50 bg-brand-cream border-b border-brand-border text-brand-dark" role="navigation" aria-label="Main navigation">
       <div className="page-container">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-90 transition-opacity">
-            <span className="text-brand-red text-2xl font-extrabold">Re</span>
-            <span className="text-white">Space</span>
+          <Link to="/" className="flex items-center gap-0 font-heading text-2xl font-extrabold tracking-tighter uppercase hover:opacity-90 transition-opacity">
+            <span className="text-brand-red">Re</span>
+            <span className="text-brand-dark">Space</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -90,8 +90,8 @@ const Navbar = () => {
                 to={link.to}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                   location.pathname === link.to
-                    ? 'text-white bg-white/10'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    ? 'text-brand-dark bg-white/10'
+                    : 'text-brand-muted hover:text-brand-dark hover:bg-white/5'
                 }`}
               >
                 {link.label}
@@ -107,7 +107,7 @@ const Navbar = () => {
                 <div ref={notifRef} className="relative">
                   <button
                     onClick={() => setNotifOpen(!notifOpen)}
-                    className="relative p-2 rounded-full hover:bg-white/10 transition-colors"
+                    className="relative p-2 rounded-full hover:bg-white/5 transition-colors text-brand-dark"
                     aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
                   >
                     <Bell className="w-5 h-5" />
@@ -119,7 +119,7 @@ const Navbar = () => {
                   </button>
 
                   {notifOpen && (
-                    <div className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-modal border border-brand-border z-50 animate-slide-up overflow-hidden">
+                    <div className="absolute right-0 top-12 w-80 bg-brand-card rounded-none shadow-none border border-brand-border z-50 animate-slide-up overflow-hidden">
                       <div className="flex items-center justify-between px-4 py-3 border-b border-brand-border">
                         <h4 className="font-semibold text-brand-dark text-sm">Notifications</h4>
                         {unreadCount > 0 && (
@@ -135,11 +135,11 @@ const Navbar = () => {
                           notifications.slice(0, 10).map((n) => (
                             <div
                               key={n._id}
-                              className={`px-4 py-3 border-b border-brand-border last:border-0 ${!n.isRead ? 'bg-red-50/50' : ''}`}
+                              className={`px-4 py-3 border-b border-brand-border last:border-0 ${!n.isRead ? 'bg-brand-red/10' : ''}`}
                             >
                               <p className="text-sm font-medium text-brand-dark">{n.title}</p>
                               <p className="text-xs text-brand-muted mt-0.5 line-clamp-2">{n.message}</p>
-                              <p className="text-xs text-gray-400 mt-1">{formatRelative(n.createdAt)}</p>
+                              <p className="text-xs text-brand-muted mt-1">{formatRelative(n.createdAt)}</p>
                             </div>
                           ))
                         )}
@@ -160,7 +160,7 @@ const Navbar = () => {
                 <div ref={userMenuRef} className="relative">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full hover:bg-white/10 transition-colors"
+                    className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-none hover:bg-white/5 transition-colors text-brand-dark"
                     aria-expanded={userMenuOpen}
                     aria-haspopup="menu"
                   >
@@ -183,11 +183,11 @@ const Navbar = () => {
                   </button>
 
                   {userMenuOpen && (
-                    <div className="absolute right-0 top-12 w-52 bg-white rounded-xl shadow-modal border border-brand-border z-50 animate-slide-up overflow-hidden" role="menu">
+                    <div className="absolute right-0 top-12 w-52 bg-brand-card rounded-none shadow-none border border-brand-border z-50 animate-slide-up overflow-hidden" role="menu">
                       {isOwner && (
                         <button
                           onClick={() => { navigate('/owner/dashboard'); setUserMenuOpen(false); }}
-                          className="flex items-center gap-3 px-4 py-3 w-full text-left text-sm text-brand-dark hover:bg-gray-50 transition-colors"
+                          className="flex items-center gap-3 px-4 py-3 w-full text-left text-sm text-brand-dark hover:bg-brand-border transition-colors"
                           role="menuitem"
                         >
                           <LayoutDashboard className="w-4 h-4 text-brand-muted" />
@@ -196,7 +196,7 @@ const Navbar = () => {
                       )}
                       <button
                         onClick={() => { navigate('/renter/dashboard'); setUserMenuOpen(false); }}
-                        className="flex items-center gap-3 px-4 py-3 w-full text-left text-sm text-brand-dark hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 w-full text-left text-sm text-brand-dark hover:bg-brand-border transition-colors"
                         role="menuitem"
                       >
                         <Calendar className="w-4 h-4 text-brand-muted" />
@@ -205,7 +205,7 @@ const Navbar = () => {
                       <div className="border-t border-brand-border" />
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 w-full text-left text-sm text-brand-error hover:bg-red-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 w-full text-left text-sm text-brand-error hover:bg-brand-border transition-colors"
                         role="menuitem"
                       >
                         <LogOut className="w-4 h-4" />
@@ -219,7 +219,7 @@ const Navbar = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/auth"
-                  className="text-sm font-medium text-gray-300 hover:text-white transition-colors px-3 py-2"
+                  className="text-sm font-bold text-brand-muted hover:text-brand-dark transition-colors px-3 py-2 uppercase tracking-wide"
                 >
                   Sign In
                 </Link>
@@ -247,7 +247,7 @@ const Navbar = () => {
 
       {/* Mobile Drawer */}
       {mobileOpen && (
-        <div className="md:hidden bg-brand-dark border-t border-white/10 animate-fade-in">
+        <div className="md:hidden bg-brand-cream border-t border-brand-border animate-fade-in">
           <div className="page-container py-4 space-y-1">
             {navLinks.map((link) => (
               <Link

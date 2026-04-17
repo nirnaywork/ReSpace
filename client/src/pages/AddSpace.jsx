@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import ImageUploader from '../components/ui/ImageUploader';
 import MapPicker from '../components/ui/MapPicker';
 import api from '../utils/api';
 import { useToast } from '../context/ToastContext';
@@ -47,7 +46,6 @@ const AddSpace = () => {
 
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const [images, setImages] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedDays, setSelectedDays] = useState([]);
   const [customSlots, setCustomSlots] = useState([]);
@@ -90,7 +88,6 @@ const AddSpace = () => {
   };
 
   const onSubmit = async (formData) => {
-    if (images.length === 0) { toast.error('Please upload at least one image'); return; }
     if (!agreedToTerms) { toast.error('Please agree to the Terms & Conditions'); return; }
 
     setSubmitting(true);
@@ -122,7 +119,7 @@ const AddSpace = () => {
           customSlots,
         },
         amenities: selectedAmenities,
-        images: images.map((img) => typeof img === 'string' ? img : img.url),
+        images: [],
         verification: {
           aadhaar: formData.aadhaar ? formData.aadhaar.slice(-4).padStart(12, '*') : '',
           pan: formData.pan,
@@ -133,8 +130,8 @@ const AddSpace = () => {
       const res = await api.post('/api/listings', payload);
       if (res.data.success) {
         await refreshProfile();
-        toast.success('Listing submitted! Go to your dashboard to publish it.');
-        navigate('/owner/dashboard');
+        toast.success('Listing published successfully!');
+        navigate('/listings');
       }
     } catch (err) {
       toast.error(err.response?.data?.error?.message || 'Failed to submit listing');
@@ -144,7 +141,7 @@ const AddSpace = () => {
   };
 
   const canGoNext = () => {
-    if (step === 1) return watch('propertyName') && watch('propertyType') && watch('description')?.length >= 50 && images.length > 0;
+    if (step === 1) return watch('propertyName') && watch('propertyType') && watch('description')?.length >= 50;
     if (step === 2) return watch('address') && watch('priceAmount');
     if (step === 3) return selectedDays.length > 0;
     return agreedToTerms;
@@ -223,11 +220,7 @@ const AddSpace = () => {
                     {errors.description && <p className="text-xs text-brand-error mt-1">{errors.description.message}</p>}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-brand-dark mb-2">Property Images <span className="text-brand-error">*</span></label>
-                    <ImageUploader images={images} onImagesChange={setImages} maxImages={8} />
-                    {images.length === 0 && <p className="text-xs text-brand-muted mt-1">Upload at least 1 image (max 8)</p>}
-                  </div>
+
                 </>
               )}
 

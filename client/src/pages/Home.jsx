@@ -1,80 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, Building2, ChefHat, Calendar, Briefcase, Car, MoreHorizontal, Sparkles, Star, WifiOff } from 'lucide-react';
+import { ArrowRight, Building2, ChefHat, Calendar, Briefcase, Car, MoreHorizontal } from 'lucide-react';
 import ListingCard from '../components/listings/ListingCard';
 import { ListingCardSkeleton } from '../components/ui/Skeleton';
-import BusinessStarterModal from '../components/ai/BusinessStarterModal';
 import api from '../utils/api';
 import FALLBACK_LISTINGS from '../data/fallbackListings';
-import { TESTIMONIALS, HOW_IT_WORKS_RENTER, HOW_IT_WORKS_OWNER } from '../utils/constants';
 
-const PROPERTY_TYPE_ICONS = {
-  Warehouse: <Building2 className="w-6 h-6" />,
-  Kitchen: <ChefHat className="w-6 h-6" />,
-  'Event Hall': <Calendar className="w-6 h-6" />,
-  'Office Space': <Briefcase className="w-6 h-6" />,
-  'Parking Space': <Car className="w-6 h-6" />,
-  Other: <MoreHorizontal className="w-6 h-6" />,
-};
-
-const TYPE_COLORS = {
-  Warehouse: 'bg-amber-50 text-amber-700 hover:bg-amber-100',
-  Kitchen: 'bg-teal-50 text-teal-700 hover:bg-teal-100',
-  'Event Hall': 'bg-blue-50 text-blue-700 hover:bg-blue-100',
-  'Office Space': 'bg-purple-50 text-purple-700 hover:bg-purple-100',
-  'Parking Space': 'bg-gray-50 text-gray-600 hover:bg-gray-100',
-  Other: 'bg-pink-50 text-pink-700 hover:bg-pink-100',
-};
-
-// Animated counter hook
-const useCounter = (target, isVisible) => {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!isVisible) return;
-    const duration = 2000;
-    const steps = 60;
-    const increment = target / steps;
-    let current = 0;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= target) { setCount(target); clearInterval(timer); }
-      else setCount(Math.floor(current));
-    }, duration / steps);
-    return () => clearInterval(timer);
-  }, [target, isVisible]);
-  return count;
-};
-
-const StatCounter = ({ target, label, suffix = '+' }) => {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  const count = useCounter(target, visible);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setVisible(true); observer.disconnect(); }
-    }, { threshold: 0.5 });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} className="text-center animate-count-up">
-      <div className="text-4xl font-extrabold text-brand-red mb-2">
-        {count.toLocaleString('en-IN')}{suffix}
-      </div>
-      <p className="text-brand-muted font-medium">{label}</p>
-    </div>
-  );
+const PROPERTY_TYPE_IMAGES = {
+  Warehouse: '/warehouseImg.jpg',
+  Kitchen: '/kitchen.jpg',
+  'Event Hall': '/eventHall.jpg',
+  'Office Space': '/officeSpace.jpg',
+  'Parking Space': '/parkingSpace.jpg',
+  Other: null
 };
 
 const Home = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('renter');
   const [featuredListings, setFeaturedListings] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
-  const [businessModalOpen, setBusinessModalOpen] = useState(false);
+  const [hoveredType, setHoveredType] = useState('Warehouse');
 
   useEffect(() => {
     // Try API first, fall back to static data automatically
@@ -100,231 +45,100 @@ const Home = () => {
       .finally(() => setLoadingFeatured(false));
   }, []);
 
-  const steps = activeTab === 'renter' ? HOW_IT_WORKS_RENTER : HOW_IT_WORKS_OWNER;
-
   return (
-    <>
+    <div className="bg-brand-cream min-h-screen">
       <Helmet>
         <title>ReSpace – Unlock India's Idle Commercial Spaces</title>
         <meta name="description" content="Rent warehouses, kitchens, event halls, office spaces, and more by the hour. India's #1 commercial space rental platform." />
       </Helmet>
 
-      {/* Hero */}
-      <section className="relative bg-brand-dark text-white min-h-[90vh] flex items-center overflow-hidden" id="hero">
-        {/* Dot pattern */}
-        <div className="absolute inset-0 dot-pattern opacity-50" />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-dark via-brand-dark/95 to-[#4a0f0f]/30" />
-
-        <div className="page-container relative z-10 py-20">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm px-4 py-2 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-brand-red" />
-              AI-Powered Space Matching · 500+ Spaces Pan-India
-            </div>
-
-            <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-6">
-              Unlock India's<br />
-              <span className="text-brand-red">Idle Spaces</span>
-            </h1>
-
-            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-xl">
-              Rent warehouses, kitchens, event halls & more — by the hour.
-              Find the perfect commercial space without long-term commitments.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/listings" id="hero-find-space-btn" className="btn-primary text-base px-8 py-4 min-h-0">
-                Find a Space <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link to="/owner/add-space" id="hero-list-space-btn" className="btn-secondary border-white text-white hover:bg-white/10 text-base px-8 py-4 min-h-0">
-                List Your Space
-              </Link>
-            </div>
-
-            <div className="flex flex-wrap gap-6 mt-10">
-              {[['500+', 'Spaces'], ['₹299', 'Starting from'], ['24/7', 'Booking']].map(([val, label]) => (
-                <div key={label} className="text-center">
-                  <p className="text-2xl font-bold text-white">{val}</p>
-                  <p className="text-xs text-gray-400">{label}</p>
-                </div>
-              ))}
-            </div>
+      {/* Brutalist Hero */}
+      <section className="relative bg-brand-cream text-brand-dark min-h-[90vh] flex items-center justify-center overflow-hidden border-b border-brand-border" id="hero">
+        <div className="page-container relative z-10 w-full flex flex-col items-center justify-center text-center">
+          <h1 className="font-heading font-black leading-[0.9] text-brand-dark m-0 tracking-tighter" style={{ fontSize: 'clamp(3rem, 10vw, 10rem)' }}>
+            UNLOCK<br/>
+            <span className="text-brand-red">SPACES</span>
+          </h1>
+          <div className="mt-16 flex flex-col sm:flex-row gap-6 w-full max-w-lg mx-auto">
+             <Link to="/listings" className="flex-1 bg-brand-card text-brand-dark border border-brand-border hover:bg-brand-red hover:text-brand-dark hover:border-brand-red transition-colors duration-300 font-heading font-bold uppercase py-6 text-center tracking-widest">
+               FIND SPACE
+             </Link>
+             <Link to="/owner/add-space" className="flex-1 bg-transparent border-2 border-brand-border text-brand-dark hover:border-brand-dark transition-colors duration-300 font-heading font-bold uppercase py-6 text-center tracking-widest">
+               LIST SPACE
+             </Link>
           </div>
         </div>
       </section>
 
-      {/* How it Works */}
-      <section className="section-padding bg-white" id="how-it-works">
+      {/* Brutalist About */}
+      <section className="py-24 md:py-40 bg-brand-surface border-b border-brand-border">
         <div className="page-container">
-          <div className="text-center mb-10">
-            <h2 className="text-brand-dark mb-4">How ReSpace Works</h2>
-            <p className="text-brand-muted max-w-xl mx-auto">Simple, fast, and secure commercial space rental.</p>
-          </div>
+           <div className="max-w-5xl">
+              <p className="font-heading text-3xl md:text-6xl text-brand-dark font-bold leading-tight tracking-tight">
+                 India's premiere <span className="text-brand-muted">infrastructure rental platform.</span> Rent warehouses, kitchens, and event halls without long-term commitments.
+              </p>
+           </div>
+        </div>
+      </section>
 
-          {/* Tab toggle */}
-          <div className="flex justify-center mb-10">
-            <div className="bg-gray-100 p-1 rounded-xl flex gap-1">
-              {['renter', 'owner'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                    activeTab === tab ? 'bg-white shadow-sm text-brand-dark' : 'text-brand-muted hover:text-brand-dark'
+      {/* Services Interactivity */}
+      <section className="bg-brand-cream border-b border-brand-border flex flex-col lg:flex-row min-h-[50vh]">
+         {/* Left Side List */}
+         <div className="flex-1 lg:border-r border-brand-border flex flex-col">
+            {Object.keys(PROPERTY_TYPE_IMAGES).map((type) => (
+               <Link 
+                  to={`/listings?type=${encodeURIComponent(type)}`}
+                  key={type}
+                  onMouseEnter={() => setHoveredType(type)}
+                  className="flex-1 border-b border-brand-border last:border-b-0 lg:last:border-b p-4 md:p-6 flex justify-between items-center group transition-colors duration-300 hover:bg-brand-red"
+               >
+                  <span className="font-heading text-xl md:text-3xl font-bold text-brand-dark uppercase tracking-tight group-hover:text-brand-cream transition-colors duration-300">{type}</span>
+                  <ArrowRight className="w-6 h-6 md:w-8 md:h-8 text-brand-dark opacity-0 group-hover:opacity-100 transition-opacity -rotate-45" />
+               </Link>
+            ))}
+         </div>
+         {/* Right Side Visual (Image) */}
+         <div className="flex-1 hidden lg:flex items-center justify-center bg-brand-surface relative overflow-hidden group border-l border-brand-border">
+            {Object.entries(PROPERTY_TYPE_IMAGES).map(([type, imageSrc]) => (
+              imageSrc ? (
+                <img
+                  key={type}
+                  src={imageSrc}
+                  alt={type}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
+                     hoveredType === type ? 'opacity-60 z-10' : 'opacity-0 z-0'
                   }`}
-                  aria-pressed={activeTab === tab}
-                >
-                  I'm a {tab === 'renter' ? 'Renter' : 'Owner'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
-            {steps.map((step, i) => (
-              <div key={step.step} className="text-center animate-fade-in">
-                <div className="w-14 h-14 rounded-full bg-brand-red text-white text-xl font-bold flex items-center justify-center mx-auto mb-4">
-                  {step.step}
-                </div>
-                {i < steps.length - 1 && (
-                  <div className="hidden sm:block absolute mt-7 ml-[8.5rem] w-16 h-0.5 bg-brand-border" />
-                )}
-                <h3 className="font-semibold text-brand-dark mb-2">{step.title}</h3>
-                <p className="text-sm text-brand-muted">{step.desc}</p>
-              </div>
+                />
+              ) : null
             ))}
-          </div>
-        </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-cream via-transparent to-transparent pointer-events-none z-20" />
+         </div>
       </section>
 
-      {/* Browse by Type */}
-      <section className="section-padding bg-brand-cream">
-        <div className="page-container">
-          <div className="text-center mb-10">
-            <h2 className="text-brand-dark mb-4">Browse by Type</h2>
-            <p className="text-brand-muted">Find exactly what your business needs</p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            {Object.entries(PROPERTY_TYPE_ICONS).map(([type, icon]) => (
-              <Link
-                key={type}
-                to={`/listings?type=${encodeURIComponent(type)}`}
-                className={`flex flex-col items-center gap-3 p-5 rounded-xl border border-transparent transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer ${TYPE_COLORS[type]}`}
-                aria-label={`Browse ${type} spaces`}
-              >
-                {icon}
-                <span className="text-sm font-semibold text-center leading-tight">{type}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
+      {/* Featured Projects Grid */}
+      <section className="py-24 md:py-40 bg-brand-cream">
+         <div className="page-container">
+             <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-brand-border pb-8 mb-12 gap-6">
+                 <h2 className="font-heading text-5xl md:text-8xl font-black text-brand-dark m-0 tracking-tighter uppercase leading-none">FEATURED</h2>
+                 <Link to="/listings" className="text-brand-muted hover:text-brand-red uppercase tracking-widest font-bold font-heading transition-colors whitespace-nowrap mb-2">
+                    VIEW ALL →→→
+                 </Link>
+             </div>
+             
+             {/* Brutalist Data Table Rows */}
+             <div className="flex flex-col border-b border-brand-border">
+               {loadingFeatured
+                 ? Array.from({ length: 6 }).map((_, i) => <div key={i} className="border-t border-brand-border p-4"><ListingCardSkeleton /></div>)
+                 : featuredListings.map(listing => (
+                     <div className="border-t border-brand-border transition-colors hover:bg-brand-card" key={listing._id}>
+                        <ListingCard listing={listing} />
+                     </div>
+                   ))
+               }
+             </div>
+         </div>
       </section>
-
-      {/* Featured Listings */}
-      <section className="section-padding bg-white">
-        <div className="page-container">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-brand-dark mb-2">Featured Spaces</h2>
-              <p className="text-brand-muted text-sm">Top-rated commercial spaces on ReSpace</p>
-            </div>
-            <Link to="/listings" className="btn-secondary text-sm hidden sm:flex">
-              View All →
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loadingFeatured
-              ? Array.from({ length: 6 }).map((_, i) => <ListingCardSkeleton key={i} />)
-              : featuredListings.map((listing) => (
-                  <ListingCard key={listing._id} listing={listing} />
-                ))
-            }
-          </div>
-
-          {!loadingFeatured && featuredListings.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-brand-muted">No listings yet. Be the first to list your space!</p>
-              <Link to="/owner/add-space" className="btn-primary mt-4 inline-flex">
-                List Your Space →
-              </Link>
-            </div>
-          )}
-
-          <div className="text-center mt-8">
-            <Link to="/listings" className="btn-primary inline-flex sm:hidden">
-              View All Spaces →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="section-padding bg-brand-cream">
-        <div className="page-container">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-12 max-w-3xl mx-auto">
-            <StatCounter target={500} label="Spaces Listed" />
-            <StatCounter target={1200} label="Bookings Made" />
-            <StatCounter target={200} label="Verified Owners" />
-          </div>
-        </div>
-      </section>
-
-      {/* Business Starter CTA */}
-      <section className="py-16 bg-brand-red">
-        <div className="page-container text-center">
-          <Sparkles className="w-10 h-10 text-white/70 mx-auto mb-4" />
-          <h2 className="text-white font-bold text-3xl mb-3">Starting a Business?</h2>
-          <p className="text-white/80 text-lg mb-6 max-w-lg mx-auto">
-            Let AI find the perfect commercial space for your business needs and budget.
-          </p>
-          <button
-            onClick={() => setBusinessModalOpen(true)}
-            className="bg-white text-brand-red font-bold px-8 py-3.5 rounded-xl hover:bg-gray-50 transition-all text-sm hover:scale-105"
-            id="business-starter-cta-btn"
-          >
-            <Sparkles className="w-4 h-4 inline mr-2" />
-            Get AI Recommendations
-          </button>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="section-padding bg-white">
-        <div className="page-container">
-          <div className="text-center mb-10">
-            <h2 className="text-brand-dark mb-3">What Our Users Say</h2>
-            <p className="text-brand-muted text-sm">Trusted by entrepreneurs across India</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="card card-hover p-6 flex flex-col gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-brand-red text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
-                    {t.initials}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-brand-dark text-sm">{t.name}</p>
-                    <p className="text-xs text-brand-muted">{t.role}</p>
-                  </div>
-                </div>
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <p className="text-sm text-brand-muted leading-relaxed italic">"{t.quote}"</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Business Starter Modal */}
-      <BusinessStarterModal isOpen={businessModalOpen} onClose={() => setBusinessModalOpen(false)} />
-    </>
+    </div>
   );
 };
 

@@ -5,7 +5,6 @@ import SearchBar from '../components/listings/SearchBar';
 import ListingFilters from '../components/listings/ListingFilters';
 import ListingGrid from '../components/listings/ListingGrid';
 import SortDropdown from '../components/listings/SortDropdown';
-import SmartMatchBox from '../components/ai/SmartMatchBox';
 import Button from '../components/ui/Button';
 import { useListings } from '../hooks/useListings';
 import { ChevronLeft, ChevronRight, WifiOff, X, SlidersHorizontal } from 'lucide-react';
@@ -14,7 +13,6 @@ const Listings = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { listings, loading, error, usingFallback, pagination, fetchListings } = useListings();
   const [showFilters, setShowFilters] = useState(false);
-  const [aiMatchedIds, setAiMatchedIds] = useState([]);
 
   const getFilters = useCallback(() => ({
     search: searchParams.get('search') || '',
@@ -130,25 +128,17 @@ const Listings = () => {
 
       <div className="bg-brand-cream min-h-screen">
         {/* Header */}
-        <div className="bg-brand-dark py-10">
+        <div className="bg-brand-cream/50 py-10 border-b border-brand-border">
           <div className="page-container">
-            <h1 className="text-white text-3xl font-bold mb-2">Find Your Space</h1>
-            <p className="text-gray-400 text-sm mb-6">
+            <h1 className="text-brand-dark text-4xl md:text-5xl font-black uppercase tracking-tighter mb-2">Find Your Space</h1>
+            <p className="text-brand-muted text-sm font-medium">
               {pagination.total > 0 ? `${pagination.total} spaces available` : 'Searching...'}
             </p>
-            <SearchBar
-              onSearch={handleSearch}
-              initialValue={currentFilters.search}
-              initialCity={currentFilters.city}
-            />
           </div>
         </div>
 
         <div className="page-container py-8">
-          {/* AI Smart Match */}
-          <div className="mb-6">
-            <SmartMatchBox onMatchResults={setAiMatchedIds} />
-          </div>
+
 
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Sidebar Filters (Desktop) */}
@@ -250,7 +240,6 @@ const Listings = () => {
               <ListingGrid
                 listings={listings}
                 loading={loading}
-                aiMatchedIds={aiMatchedIds}
                 emptyMessage="No spaces found. Try clearing some filters."
                 emptyAction={
                   <Button variant="primary" onClick={handleClearFilters}>

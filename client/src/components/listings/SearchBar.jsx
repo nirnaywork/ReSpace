@@ -18,7 +18,7 @@ const SearchBar = ({ onSearch, initialValue = '', initialCity = '' }) => {
 
   return (
     <form onSubmit={handleSubmit} className="relative w-full" role="search">
-      <div className="flex rounded-xl overflow-hidden border border-brand-border shadow-sm bg-white focus-within:ring-2 focus-within:ring-brand-red/30 focus-within:border-brand-red transition-all">
+      <div className="flex rounded-xl overflow-hidden border border-brand-border shadow-sm bg-brand-card focus-within:ring-2 focus-within:ring-brand-red/30 focus-within:border-brand-red transition-all">
         {/* Search input */}
         <div className="flex items-center flex-1 px-4 gap-2">
           <Search className="w-5 h-5 text-brand-muted flex-shrink-0" />
@@ -59,7 +59,7 @@ const SearchBar = ({ onSearch, initialValue = '', initialCity = '' }) => {
             aria-label="Filter by city"
           />
           {showCitySuggestions && filteredCities.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-brand-border rounded-lg shadow-lg z-20 py-1">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-brand-card border border-brand-border rounded-lg shadow-lg z-20 py-1">
               {filteredCities.slice(0, 6).map((c) => (
                 <button
                   key={c}

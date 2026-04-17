@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String     @id @default(uuid())
+  firebaseUid    String     @unique
+  email          String     @unique
+  name           String
+  photoURL       String?
+  phone          String?
+  roles          String[]   // ["owner", "renter"]
+  isVerified     Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+
+  listings          Listing[] @relation("OwnedListings")
+  savedListings     String[]   // Array of saved listing IDs
+
+  // Opposite relations required by Prisma
+  bookingsRented    Booking[] @relation("UserBookings")
+  bookingsOwned     Booking[] @relation("OwnerBookings")
+  reviews           Review[]  @relation("UserReviews")
+  notifications     Notification[]
+}
+
+model Listing {
+  id              String   @id @default(uuid())
+  ownerId         String
+  propertyName    String
+  propertyType    String   // Enum logic enforced at API
+  description     String
+  priceAmount     Float
+  priceType       String   // 'hour', 'day', 'week'
+  securityDeposit Float    @default(0)
+  refundPolicy    Boolean  @default(false)
+  refundHours     Int      @default(24)
+
+  // JSON fields for embedded documents
+  location        Json     // { address, city, state, lat, lng }
+  availability    Json     // { days, openTime, closeTime }
+  amenities       String[]
+  images          String[]
+  verification    Json?    // { aadhaar, pan, isSubmitted }
+
+  isVerified      Boolean  @default(false)
+  isPublished     Boolean  @default(false)
+  isDeleted       Boolean  @default(false)
+  viewCount       Int      @default(0)
+  totalBookings   Int      @default(0)
+  avgRating       Float    @default(0)
+  reviewCount     Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  owner           User     @relation("OwnedListings", fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  bookings        Booking[]
+  reviews         Review[]
+}
+
+model Booking {
+  id              String   @id @default(uuid())
+  renterId        String
+  ownerId         String
+  listingId       String
+  
+  slotDate        String
+  slotStart       String
+  slotEnd         String
+  duration        Float?
+  
+  totalPrice      Float
+  currency        String   @default("INR")
+  status          String   @default("pending") // 'pending', 'confirmed', 'cancelled', 'completed'
+  
+  paymentMethod   String?
+  paymentStatus   String   @default("pending")
+  paymentDetails  Json?
+
+  refundStatus    String   @default("not_applicable")
+  cancellationRs  String?
+  ownerNotes      String?
+  isReviewed      Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+
+  renter          User     @relation("UserBookings", fields: [renterId], references: [id])
+  owner           User     @relation("OwnerBookings", fields: [ownerId], references: [id])
+  listing         Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  review          Review?  // One-to-one relation
+}
+
+model Review {
+  id              String   @id @default(uuid())
+  bookingId       String   @unique
+  listingId       String
+  renterId        String
+  
+  rating          Int
+  comment         String?
+  ownerReply      String?
+  
+  createdAt       DateTime @default(now())
+
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  listing         Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  renter          User     @relation("UserReviews", fields: [renterId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id              String   @id @default(uuid())
+  userId          String
+  type            String   // 'booking_confirmed', 'new_review', etc.
+  title           String?
+  message         String?
+  link            String?
+  isRead          Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

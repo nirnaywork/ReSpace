@@ -4,12 +4,11 @@ import { auth } from './firebase';
 /**
  * Axios instance.
  *
- * baseURL = '' so /api/listings becomes a relative URL → 
- * Vite dev proxy forwards it to http://localhost:5000.
- * This sidesteps CORS entirely during development.
+ * In Production (Vercel): Uses VITE_API_URL pointing to Render/Railway.
+ * In Local Dev: Uses '' (empty) so Vite proxy forwards it to http://localhost:5000.
  */
 const api = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_URL || '',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });

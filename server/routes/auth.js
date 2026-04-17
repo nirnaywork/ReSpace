@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const verifyToken = require('../middleware/verifyToken');
-const User = require('../models/User');
+const prisma = require('../config/prisma');
 
 // POST /api/auth/register
 router.post('/register', verifyToken, async (req, res, next) => {
@@ -10,24 +10,27 @@ router.post('/register', verifyToken, async (req, res, next) => {
     const { uid, email, name } = req.user;
     const { photoURL, phone } = req.body;
 
-    let user = await User.findOne({ uid });
+    let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
 
     if (!user) {
-      user = new User({
-        uid,
-        email,
-        name: name || req.body.name || email.split('@')[0],
-        photoURL: photoURL || '',
-        phone: phone || '',
-        roles: [],
+      user = await prisma.user.create({
+        data: {
+          firebaseUid: uid,
+          email,
+          name: name || req.body.name || email.split('@')[0],
+          photoURL: photoURL || '',
+          phone: phone || '',
+          roles: [],
+        }
       });
-      await user.save();
     } else {
       // Update last info from Firebase
       if (photoURL && !user.photoURL) {
-        user.photoURL = photoURL;
+        user = await prisma.user.update({
+          where: { firebaseUid: uid },
+          data: { photoURL }
+        });
       }
-      await user.save();
     }
 
     res.json({ success: true, data: { user: sanitizeUser(user) } });
@@ -39,10 +42,15 @@ router.post('/register', verifyToken, async (req, res, next) => {
 // GET /api/auth/me
 router.get('/me', verifyToken, async (req, res, next) => {
   try {
-    const user = await User.findOne({ uid: req.user.uid }).populate('savedListings', 'propertyName images location price');
+    const user = await prisma.user.findUnique({
+      where: { firebaseUid: req.user.uid }
+    });
+    
     if (!user) {
       return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'User not found' } });
     }
+    
+    // In MongoDB we populated savedListings, skipping for simplicity or can implement manual fetch if needed
     res.json({ success: true, data: { user: sanitizeUser(user) } });
   } catch (error) {
     next(error);
@@ -68,15 +76,21 @@ router.put(
       }
 
       const { name, phone, photoURL } = req.body;
-      const user = await User.findOne({ uid: req.user.uid });
-      if (!user) {
+      const userExists = await prisma.user.findUnique({ where: { firebaseUid: req.user.uid } });
+      
+      if (!userExists) {
         return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'User not found' } });
       }
 
-      if (name) user.name = name;
-      if (phone !== undefined) user.phone = phone;
-      if (photoURL !== undefined) user.photoURL = photoURL;
-      await user.save();
+      const updateData = {};
+      if (name) updateData.name = name;
+      if (phone !== undefined) updateData.phone = phone;
+      if (photoURL !== undefined) updateData.photoURL = photoURL;
+
+      const user = await prisma.user.update({
+        where: { firebaseUid: req.user.uid },
+        data: updateData
+      });
 
       res.json({ success: true, data: { user: sanitizeUser(user) } });
     } catch (error) {
@@ -93,25 +107,29 @@ router.post('/add-role', verifyToken, async (req, res, next) => {
       return res.status(400).json({ success: false, error: { code: 'INVALID_ROLE', message: 'Role must be owner or renter' } });
     }
 
-    const user = await User.findOne({ uid: req.user.uid });
+    const user = await prisma.user.findUnique({ where: { firebaseUid: req.user.uid } });
     if (!user) {
       return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'User not found' } });
     }
 
     if (!user.roles.includes(role)) {
-      user.roles.push(role);
-      await user.save();
+      const updatedRoles = [...user.roles, role];
+      const updatedUser = await prisma.user.update({
+        where: { firebaseUid: req.user.uid },
+        data: { roles: updatedRoles }
+      });
+      res.json({ success: true, data: { user: sanitizeUser(updatedUser) } });
+    } else {
+      res.json({ success: true, data: { user: sanitizeUser(user) } });
     }
-
-    res.json({ success: true, data: { user: sanitizeUser(user) } });
   } catch (error) {
     next(error);
   }
 });
 
 const sanitizeUser = (user) => ({
-  _id: user._id,
-  uid: user.uid,
+  _id: user.id || user._id, // map Prisma id to old _id format for frontend backwards compatibility
+  uid: user.firebaseUid,
   email: user.email,
   name: user.name,
   photoURL: user.photoURL,

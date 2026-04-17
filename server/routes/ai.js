@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middleware/verifyToken');
-const Listing = require('../models/Listing');
+const prisma = require('../config/prisma');
 const { chatWithGroq } = require('../utils/groqClient');
 
 // POST /api/ai/chat
@@ -42,24 +42,28 @@ Return ONLY the JSON, no explanation.`;
       console.warn('Param extraction failed:', parseErr.message);
     }
 
-    // Step 2: Build DB query from extracted params
-    const dbFilter = { isPublished: true, isDeleted: { $ne: true } };
+    // Step 2: Build DB Prisma query from extracted params
+    const dbFilter = { isPublished: true, isDeleted: false };
     if (extractedParams.propertyType) dbFilter.propertyType = extractedParams.propertyType;
-    if (extractedParams.city) dbFilter['location.city'] = { $regex: extractedParams.city, $options: 'i' };
-    if (extractedParams.maxPrice) dbFilter['price.amount'] = { $lte: Number(extractedParams.maxPrice) };
-    if (extractedParams.amenities?.length) dbFilter.amenities = { $in: extractedParams.amenities };
+    if (extractedParams.city) {
+      dbFilter.location = { path: ['city'], string_contains: extractedParams.city };
+    }
+    if (extractedParams.maxPrice) dbFilter.priceAmount = { lte: Number(extractedParams.maxPrice) };
+    if (extractedParams.amenities?.length) dbFilter.amenities = { hasSome: extractedParams.amenities };
 
-    const listings = await Listing.find(dbFilter)
-      .select('-verification')
-      .sort({ avgRating: -1, totalBookings: -1 })
-      .limit(3)
-      .lean();
+    const listings = await prisma.listing.findMany({
+      where: dbFilter,
+      orderBy: [ { avgRating: 'desc' }, { totalBookings: 'desc' } ],
+      take: 3
+    });
+
+    const formattedListings = listings.map(l => ({ ...l, _id: l.id, price: { amount: l.priceAmount, type: l.priceType } }));
 
     // Step 3: Build Groq conversation
     const systemPrompt = `You are a helpful assistant for ReSpace, India's commercial space rental platform.
     Help users find spaces. Be conversational, concise, and helpful.
-    ${listings.length > 0
-      ? `I found ${listings.length} matching spaces: ${listings.map((l) => `${l.propertyName} in ${l.location.city} at ₹${l.price.amount}/${l.price.type}`).join(', ')}.`
+    ${formattedListings.length > 0
+      ? `I found ${formattedListings.length} matching spaces: ${formattedListings.map((l) => `${l.propertyName} in ${l.location?.city} at ₹${l.priceAmount}/${l.priceType}`).join(', ')}.`
       : 'No exact matches found in our database.'}
     If no listings found, suggest alternative searches but clearly state you could not find exact matches on ReSpace.
     NEVER make up listing data.`;
@@ -71,17 +75,9 @@ Return ONLY the JSON, no explanation.`;
     ];
 
     const reply = await chatWithGroq(groqMessages, { temperature: 0.7, max_tokens: 500 });
+    const source = formattedListings.length > 0 ? 'db' : 'groq_suggestion';
 
-    const source = listings.length > 0 ? 'db' : 'groq_suggestion';
-
-    res.json({
-      success: true,
-      data: {
-        reply,
-        listings: listings.length > 0 ? listings : [],
-        source,
-      },
-    });
+    res.json({ success: true, data: { reply, listings: formattedListings, source } });
   } catch (error) {
     if (error.message?.includes('GROQ')) {
       return res.json({ success: true, data: { reply: 'I\'m having trouble connecting right now. Please try searching directly using our filters above.', listings: [], source: 'fallback' } });
@@ -122,19 +118,19 @@ Return ONLY JSON:
     }
 
     // Merge with manual filters
-    const dbFilter = { isPublished: true, isDeleted: { $ne: true }, ...filters };
+    const dbFilter = { isPublished: true, isDeleted: false, ...filters };
     if (params.propertyType) dbFilter.propertyType = params.propertyType;
-    if (params.city) dbFilter['location.city'] = { $regex: params.city, $options: 'i' };
-    if (params.maxPrice) dbFilter['price.amount'] = { $lte: Number(params.maxPrice) };
-    if (params.amenities?.length) dbFilter.amenities = { $in: params.amenities };
+    if (params.city) dbFilter.location = { path: ['city'], string_contains: params.city };
+    if (params.maxPrice) dbFilter.priceAmount = { lte: Number(params.maxPrice) };
+    if (params.amenities?.length) dbFilter.amenities = { hasSome: params.amenities };
 
-    const listings = await Listing.find(dbFilter)
-      .select('-verification')
-      .sort({ avgRating: -1, totalBookings: -1 })
-      .limit(6)
-      .lean();
+    const listings = await prisma.listing.findMany({
+      where: dbFilter,
+      orderBy: [ { avgRating: 'desc' }, { totalBookings: 'desc' } ],
+      take: 6
+    });
 
-    const top3 = listings.slice(0, 3);
+    const top3 = listings.slice(0, 3).map(l => ({ ...l, _id: l.id, price: { amount: l.priceAmount, type: l.priceType } }));
 
     let reasoning = 'Matched based on your search criteria.';
     if (top3.length > 0) {
@@ -151,7 +147,7 @@ Return ONLY JSON:
     res.json({
       success: true,
       data: {
-        matchedIds: top3.map((l) => l._id.toString()),
+        matchedIds: top3.map((l) => l.id.toString()),
         listings: top3,
         reasoning,
       },
@@ -169,7 +165,6 @@ router.post('/business-starter', verifyToken, async (req, res, next) => {
       return res.status(400).json({ success: false, error: { code: 'INVALID_INPUT', message: 'businessType, location, and budget are required' } });
     }
 
-    // Map business type to property type
     const typeMap = {
       'Food Business': 'Kitchen',
       'Event Planning': 'Event Hall',
@@ -178,19 +173,19 @@ router.post('/business-starter', verifyToken, async (req, res, next) => {
     };
     const preferredType = typeMap[businessType];
 
-    // Find matching listings
-    const dbFilter = { isPublished: true, isDeleted: { $ne: true } };
+    const dbFilter = { isPublished: true, isDeleted: false };
     if (preferredType) dbFilter.propertyType = preferredType;
-    dbFilter['location.city'] = { $regex: location, $options: 'i' };
-    dbFilter['price.amount'] = { $lte: budget };
+    if (location) dbFilter.location = { path: ['city'], string_contains: location };
+    if (budget) dbFilter.priceAmount = { lte: Number(budget) };
 
-    const listings = await Listing.find(dbFilter)
-      .select('-verification')
-      .sort({ avgRating: -1 })
-      .limit(3)
-      .lean();
+    const listings = await prisma.listing.findMany({
+      where: dbFilter,
+      orderBy: { avgRating: 'desc' },
+      take: 3
+    });
+    
+    const formattedListings = listings.map(l => ({ ...l, _id: l.id, price: { amount: l.priceAmount, type: l.priceType } }));
 
-    // Generate AI recommendation
     const prompt = `You are a business advisor for ReSpace India. A user is starting a ${businessType} in ${location} with a monthly infrastructure budget of ₹${budget.toLocaleString('en-IN')}.
 
 Write a helpful 2-3 sentence recommendation about what type of space they need.
@@ -225,7 +220,7 @@ Return ONLY the JSON.`;
       success: true,
       data: {
         recommendation: aiResponse.recommendation,
-        listings,
+        listings: formattedListings,
         tips: aiResponse.tips || [],
       },
     });
